@@ -57,7 +57,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.named('asciidoctor') {
+asciidoctor {
     configurations "asciidoctorExtensions"
     inputs.dir snippetsDir
     dependsOn test
@@ -65,18 +65,13 @@ tasks.named('asciidoctor') {
 
 task copyDocument(type: Copy) {
     dependsOn asciidoctor
-    //from file("build/asciidoc/html5/")
-    from file("build/docs/asciidoc/")
-    into file("src/main/resources/static/docs")
+
+    from file(asciidoctor.outputDir)
+    into file("${sourceSets.main.output.resourcesDir}/static/docs")
+
+    println "# ${asciidoctor.outputDir}/index.html 파일을 ${sourceSets.main.output.resourcesDir}/static/docs/ 아래로 복사함"
 }
 
-build {
+bootJar {
     dependsOn copyDocument
-}
-
-jar {
-    dependsOn asciidoctor
-    from ("${asciidoctor.outputDir}/html5") {
-        into 'static/docs'
-    }
 }
