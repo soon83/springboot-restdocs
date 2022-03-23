@@ -1,21 +1,26 @@
 package com.soon83.springdatajpa.restdocs;
 
-import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
-import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;
+import org.springframework.restdocs.constraints.ConstraintDescriptions;
+import org.springframework.restdocs.operation.preprocess.UriModifyingOperationPreprocessor;
 
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import java.util.List;
+
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 
 public interface ApiDocumentUtils {
 
-    static OperationRequestPreprocessor getDocumentRequest() {
-        return preprocessRequest(modifyUris()
+    static UriModifyingOperationPreprocessor uriModifyingOperationPreprocessor() {
+        return modifyUris()
                 .scheme("https")
                 .host("t-www.campingtalk.me")
-                .removePort(), prettyPrint());
+                .removePort();
     }
 
-    static OperationResponsePreprocessor getDocumentResponse() {
-        return preprocessResponse(prettyPrint());
-    }
+    static List<String> descriptionsForNameProperty(Class clazz, String property) {
+        ConstraintDescriptions constraintDescriptions = new ConstraintDescriptions(clazz);
+        List<String> nameDescription = constraintDescriptions.descriptionsForProperty(property);
+        //System.out.println("nameDescription = " + nameDescription);
 
+        return nameDescription;
+    }
 }

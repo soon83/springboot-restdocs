@@ -22,17 +22,17 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
-import static com.soon83.springdatajpa.restdocs.ApiDocumentUtils.getDocumentRequest;
-import static com.soon83.springdatajpa.restdocs.ApiDocumentUtils.getDocumentResponse;
+import static com.soon83.springdatajpa.restdocs.ApiDocumentUtils.descriptionsForNameProperty;
+import static com.soon83.springdatajpa.restdocs.ApiDocumentUtils.uriModifyingOperationPreprocessor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.restdocs.snippet.Attributes.attributes;
 import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,7 +52,10 @@ class UserApiControllerTest {
     @BeforeEach
     public void setUpRestdocs(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .apply(documentationConfiguration(restDocumentation))
+                .apply(documentationConfiguration(restDocumentation)
+                        .operationPreprocessors()
+                        .withRequestDefaults(uriModifyingOperationPreprocessor(), prettyPrint())
+                        .withResponseDefaults(prettyPrint()))
                 .build();
     }
 
@@ -75,8 +78,6 @@ class UserApiControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andDo(document("query-all-users",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
                         responseFields(
                                 fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("결과"),
                                 fieldWithPath("code").type(JsonFieldType.STRING).description("결과코드"),
@@ -106,8 +107,6 @@ class UserApiControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andDo(document("query-user-by-id",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
                         pathParameters(
                                 parameterWithName("userId").description("사용자 아이디")
                         ),
@@ -128,10 +127,10 @@ class UserApiControllerTest {
     void createUser() throws Exception {
         // given
         Long createdUserId = 1L;
-        UserDto userDto = new UserDto("드록바", Gender.MALE, 23);
+        UserCreateRequest userDto = new UserCreateRequest("드록바", Gender.MALE, 23);
 
         // when
-        when(userService.createUser(any(UserDto.class))).thenReturn(createdUserId);
+        when(userService.createUser(any(UserCreateRequest.class))).thenReturn(createdUserId);
 
         // then
         this.mockMvc.perform(RestDocumentationRequestBuilders.post("/api/users")
@@ -141,14 +140,14 @@ class UserApiControllerTest {
                 .andExpect(status().isCreated())
                 .andDo(print())
                 .andDo(document("create-user",
-                        getDocumentRequest(),
-                        getDocumentResponse(),
                         requestFields(
-                                attributes(key("title").value("사용자 단건 등록")),
-                                fieldWithPath("name").type(JsonFieldType.STRING).description("User 이름"),
-                                fieldWithPath("gender").type(JsonFieldType.STRING).description("User 성별"),
-                                fieldWithPath("age").type(JsonFieldType.NUMBER).description("User 나이")
-                                        .attributes(key("constraints").value("얘는 비어있음 안돼요"))
+                                fieldWithPath("name").type(JsonFieldType.STRING).description("사용자 이름")
+                                        .attributes(key("constraints").value(descriptionsForNameProperty(UserCreateRequest.class, "name"))),
+                                fieldWithPath("gender").type(JsonFieldType.STRING).description("사용자 성별")
+                                        .attributes(key("constraints").value(descriptionsForNameProperty(UserCreateRequest.class, "gender"))),
+                                fieldWithPath("age").type(JsonFieldType.NUMBER).description("사용자 나이").optional()
+                                        .attributes(key("constraints").value(descriptionsForNameProperty(UserCreateRequest.class, "age")))
+                                //.attributes(key("constraints").value("0 이상인 값 이어야 합니다."))
                         ),
                         relaxedResponseFields(
                                 fieldWithPath("success").type(JsonFieldType.BOOLEAN).description("결과"),
