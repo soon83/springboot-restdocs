@@ -1,10 +1,11 @@
 spring:
 
   datasource:
-    url: jdbc:h2:~/Study/h2/test;mode=mysql
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    hikari:
+      jdbc-url: jdbc:h2:~/Devtools/h2-database/spring-data-jpa;mode=mysql
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
 
   jpa:
     database-platform: org.hibernate.dialect.MariaDB103Dialect
