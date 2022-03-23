@@ -6,17 +6,20 @@ import com.soon83.springdatajpa.service.UserService;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -35,14 +38,15 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(UserApiController.class)
-//@AutoConfigureRestDocs
+@SpringBootTest
+@Rollback(value = false)
 @ExtendWith(RestDocumentationExtension.class)
-class UserApiControllerTest {
+class UserApiControllerIntegratedTest {
 
-    @MockBean
+    @Autowired
     private UserService userService;
 
     private MockMvc mockMvc;
@@ -60,17 +64,13 @@ class UserApiControllerTest {
                 .build();
     }
 
+    @Order(2)
     @Test
-    @DisplayName("[RestDocs] 사용자 목록 조회")
+    @DisplayName("[통합테스트] 사용자 목록 조회")
     void findAllUsers() throws Exception {
         // given
-        List<UserResponse> userResponses = Lists.newArrayList(
-                new UserResponse(1L, "드록바", Gender.MALE, 23),
-                new UserResponse(2L, "메시", Gender.FEMALE, 21)
-        );
 
         // when
-        when(userService.findAllUsers()).thenReturn(userResponses);
 
         // then
         this.mockMvc.perform(RestDocumentationRequestBuilders.get("/api/users")
@@ -91,21 +91,24 @@ class UserApiControllerTest {
                 ));
     }
 
+    @Order(1)
     @Test
-    @DisplayName("[RestDocs] 사용자 단건 조회")
+    @DisplayName("[통합테스트] 사용자 단건 조회")
     void findUserById() throws Exception {
         // given
         Long userId = 1L;
-        UserResponse userResponse = new UserResponse(userId, "드록바", Gender.MALE, 23);
 
         // when
-        when(userService.findUserById(eq(userId))).thenReturn(userResponse);
 
         // then
         this.mockMvc.perform(RestDocumentationRequestBuilders.get("/api/users/{userId}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("data.userId").isNotEmpty())
+                .andExpect(jsonPath("data.userId").value(1L))
+                .andExpect(jsonPath("data.name").value("드록바"))
+                .andExpect(jsonPath("data.gender").value(Gender.MALE.name()))
                 .andDo(print())
                 .andDo(document("query-user-by-id",
                         pathParameters(
@@ -123,15 +126,14 @@ class UserApiControllerTest {
                 ));
     }
 
+    @Order(0)
     @Test
-    @DisplayName("[RestDocs] 사용자 단건 등록")
+    @DisplayName("[통합테스트] 사용자 단건 등록")
     void createUser() throws Exception {
         // given
-        Long createdUserId = 1L;
         UserCreateRequest userCreateRequest = new UserCreateRequest("드록바", Gender.MALE, 23);
 
         // when
-        when(userService.createUser(any(UserCreateRequest.class))).thenReturn(createdUserId);
 
         // then
         this.mockMvc.perform(RestDocumentationRequestBuilders.post("/api/users")
@@ -139,7 +141,10 @@ class UserApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("data.userId").isNotEmpty())
+                .andExpect(jsonPath("data.userId").value(1L))
                 .andDo(print())
+
                 .andDo(document("create-user",
                         requestFields(
                                 fieldWithPath("name").type(JsonFieldType.STRING).description("사용자 이름")
