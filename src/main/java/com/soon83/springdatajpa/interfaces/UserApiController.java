@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -18,9 +19,9 @@ public class UserApiController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Res<UserResponse>> createUser(@RequestBody UserDto userDto) throws URISyntaxException {
+    public ResponseEntity<Res<UserResponse>> createUser(@Valid @RequestBody UserCreateRequest userCreateRequest) throws URISyntaxException {
 
-        Long createdUserId = userService.createUser(userDto);
+        Long createdUserId = userService.createUser(userCreateRequest);
 
         return ResponseEntity
                 .created(HttpUtil.getCurrentUri(createdUserId))

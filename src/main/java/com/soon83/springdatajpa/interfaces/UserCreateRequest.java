@@ -7,19 +7,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UserDto {
+public class UserCreateRequest {
 
+    @NotBlank
     private String name;
-    private Gender gender;
 
     @NotNull
-    private int age;
+    private Gender gender;
+
+    @Min(value = 1)
+    @Max(value = 120)
+    private Integer age;
 
     public User toEntity() {
         return User.builder()

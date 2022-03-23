@@ -1,6 +1,6 @@
 package com.soon83.springdatajpa.service;
 
-import com.soon83.springdatajpa.interfaces.UserDto;
+import com.soon83.springdatajpa.interfaces.UserCreateRequest;
 import com.soon83.springdatajpa.interfaces.UserResponse;
 import com.soon83.springdatajpa.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,8 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public Long createUser(UserDto userDto) {
-        return userRepository.save(userDto.toEntity()).getId();
+    public Long createUser(UserCreateRequest userCreateRequest) {
+        return userRepository.save(userCreateRequest.toEntity()).getId();
     }
 
     public List<UserResponse> findAllUsers() {
