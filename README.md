@@ -1,5 +1,5 @@
 # Spring REST Docs (API 문서 자동화)
-- 공식문서: https://docs.spring.io/spring-restdocs/docs/current/reference/html5/
+[공식문서 링크](https://docs.spring.io/spring-restdocs/docs/current/reference/html5/)
 
 ## 준비물
 1. asciidoctor 플러그인
