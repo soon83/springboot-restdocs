@@ -52,24 +52,21 @@ dependencies {
     asciidoctorExt "org.springframework.restdocs:spring-restdocs-asciidoctor:$restdocsVersion"
 }
 
-tasks.named('test') {
+test {
     outputs.dir snippetsDir
     useJUnitPlatform()
 }
 
 asciidoctor {
+    dependsOn test
     inputs.dir snippetsDir
     configurations 'asciidoctorExt'
-    dependsOn test
 }
 
 task copyDocument(type: Copy) {
     dependsOn asciidoctor
-
     from file(asciidoctor.outputDir)
     into file("${sourceSets.main.output.resourcesDir}/static/docs")
-
-    println "# ${asciidoctor.outputDir}/index.html 파일을 ${sourceSets.main.output.resourcesDir}/static/docs/ 아래로 복사함"
 }
 
 bootJar {
