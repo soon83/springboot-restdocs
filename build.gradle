@@ -15,7 +15,7 @@ ext {
 }
 
 configurations {
-    asciidoctorExtensions
+    asciidoctorExt
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -49,7 +49,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "org.springframework.restdocs:spring-restdocs-mockmvc:$restdocsVersion"
 
-    asciidoctorExtensions "org.springframework.restdocs:spring-restdocs-asciidoctor:$restdocsVersion"
+    asciidoctorExt "org.springframework.restdocs:spring-restdocs-asciidoctor:$restdocsVersion"
 }
 
 tasks.named('test') {
@@ -58,7 +58,7 @@ tasks.named('test') {
 }
 
 asciidoctor {
-    configurations "asciidoctorExtensions"
+    configurations 'asciidoctorExt'
     inputs.dir snippetsDir
     dependsOn test
 }
